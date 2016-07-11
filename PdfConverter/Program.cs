@@ -4,12 +4,15 @@ using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 using PdfSharp.Pdf.Advanced;
 using System.IO;
+using Ghostscript.NET;
+using Ghostscript.NET.Rasterizer;
 
 namespace PdfConverter
 {
     class Program
     {
         static private string strDirectory = string.Empty;
+        static private string pdfFilename = string.Empty;
 
         static void Main(string[] args)
         {
@@ -18,9 +21,9 @@ namespace PdfConverter
                 return;
             }
 
-            string filename = args[0];
+            pdfFilename = args[0];
 
-            PdfDocument document = PdfReader.Open(filename);
+            PdfDocument document = PdfReader.Open(pdfFilename);
 
             CheckDirectory();
 
@@ -66,6 +69,8 @@ namespace PdfConverter
         {
             string filter = image.Elements.GetName("/Filter");
 
+            //filter = "/FlateDecode";
+
             switch (filter)
             {
                 case "/DCTDecode":
@@ -101,6 +106,33 @@ namespace PdfConverter
             // We don't need that feature at the moment and therefore will not implement it.
             // If you write the code for exporting images I would be pleased to publish it in a future release
             // of PDFsharp.
+
+            int desired_x_dpi = 96;
+            int desired_y_dpi = 96;
+
+            string inputPdfPath = pdfFilename;
+            string outputPath = strDirectory;
+
+            using (var rasterizer = new GhostscriptRasterizer())
+            {
+                rasterizer.Open(inputPdfPath);
+                for (var pageNumber = 1; pageNumber <= rasterizer.PageCount; pageNumber++)
+                {
+                    var pageFilePath = Path.Combine(outputPath, string.Format("/Image{0}.png", pageNumber));
+                    using (System.Drawing.Image img = rasterizer.GetPage(desired_x_dpi, desired_y_dpi, pageNumber))
+                    {
+                        img.Save(pageFilePath);
+
+                        Console.WriteLine(pageNumber);
+
+                        img.Dispose();
+
+                        GC.Collect();
+                    }
+                }
+            }
+
+
         }
 
         static void CheckDirectory()
