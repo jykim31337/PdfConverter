@@ -4,8 +4,6 @@ using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 using PdfSharp.Pdf.Advanced;
 using System.IO;
-using Ghostscript.NET;
-using Ghostscript.NET.Rasterizer;
 
 namespace PdfConverter
 {
@@ -61,15 +59,12 @@ namespace PdfConverter
                     }
                 }
             }
-            //MessageBox.Show(imageCount + " images exported.", "Export Images");
             Console.WriteLine("END");
         }
 
         static void ExportImage(PdfDictionary image, ref int count)
         {
             string filter = image.Elements.GetName("/Filter");
-
-            //filter = "/FlateDecode";
 
             switch (filter)
             {
@@ -106,33 +101,6 @@ namespace PdfConverter
             // We don't need that feature at the moment and therefore will not implement it.
             // If you write the code for exporting images I would be pleased to publish it in a future release
             // of PDFsharp.
-
-            int desired_x_dpi = 96;
-            int desired_y_dpi = 96;
-
-            string inputPdfPath = pdfFilename;
-            string outputPath = strDirectory;
-
-            using (var rasterizer = new GhostscriptRasterizer())
-            {
-                rasterizer.Open(inputPdfPath);
-                for (var pageNumber = 1; pageNumber <= rasterizer.PageCount; pageNumber++)
-                {
-                    var pageFilePath = Path.Combine(outputPath, string.Format("/Image{0}.png", pageNumber));
-                    using (System.Drawing.Image img = rasterizer.GetPage(desired_x_dpi, desired_y_dpi, pageNumber))
-                    {
-                        img.Save(pageFilePath);
-
-                        Console.WriteLine(pageNumber);
-
-                        img.Dispose();
-
-                        GC.Collect();
-                    }
-                }
-            }
-
-
         }
 
         static void CheckDirectory()
@@ -154,6 +122,5 @@ namespace PdfConverter
                 Console.WriteLine(err);
             }
         }
-
     }
 }
