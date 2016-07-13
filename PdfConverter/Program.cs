@@ -27,7 +27,10 @@ namespace PdfConverter
 
             int imageCount = 0;
 
-            Console.WriteLine(document.Pages.Count);
+            Console.WriteLine("TotalPages: " + document.Pages.Count);
+
+            DateTime dtStart = DateTime.Now;
+            Console.WriteLine("START: " + dtStart.GetDateTimeFormats()[140]);
             
             // Iterate pages
             foreach (PdfPage page in document.Pages)
@@ -52,14 +55,26 @@ namespace PdfConverter
                                 if (xObject != null && xObject.Elements.GetString("/Subtype") == "/Image")
                                 {
                                     ExportImage(xObject, ref imageCount);
-                                    Console.WriteLine(imageCount);
+
+                                    if (imageCount % 100 == 0)
+                                    {
+                                        Console.WriteLine(imageCount);
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-            Console.WriteLine("END");
+
+            DateTime dtEnd = DateTime.Now;
+
+            Console.WriteLine("END: " + dtEnd.GetDateTimeFormats()[140]);
+
+            TimeSpan ts = dtEnd - dtStart;
+
+            Console.WriteLine("TotalMiliseconds: " + ts.TotalMilliseconds);
+            Console.ReadKey();
         }
 
         static void ExportImage(PdfDictionary image, ref int count)
